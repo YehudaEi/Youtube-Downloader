@@ -18,37 +18,40 @@
  * 
 ************************************************/
 
+$scriptPath = "/YouTube/movie.mp4";
+
 $url = parse_url($_SERVER['REQUEST_URI']);
-if(strpos($url['path'], "movie.mp4") !== (strlen($url['path']) - 9))
-    header("Location: ".substr($_SERVER['SCRIPT_NAME'], 0, strrpos($_SERVER['SCRIPT_NAME'], "/"))."/movie.mp4");
+if($url['path'] !== $scriptPath)
+    header("Location: {$scriptPath}");
 
 if(!isset($_GET['url'])){
     print '<html><head><title>PHP Youtube</title>'.
-        '<script>function watch(){if(url=document.getElementById("url").value,null!==document.getElementById("video")){var e=document.getElementById("video");e.parentNode.removeChild(e);watch()}else{var t=document.createElement("video");t.setAttribute("src","?id="+url),t.setAttribute("id","video"),t.setAttribute("controls","controls"),t.setAttribute("autoplay","autoplay"),document.getElementById("content").appendChild(t)}}</script>'.
-        '</head><body dir="rtl"><div style="visibility: hidden;"></body></div><center id="content"><h1>PHP Youtube Downloader</h1><input type="text" style="width:180" placeholder="Here is the link to YouTube :)" id="url"><br><br><button onclick="watch()">watch</button><br><br></center></body></html>'; 
+        '<script>function watch(){if(url=document.getElementById("url").value,null!==document.getElementById("video")){var e=document.getElementById("video");e.parentNode.removeChild(e);watch()}else{var t=document.createElement("video");t.setAttribute("src","?url="+url),t.setAttribute("id","video"),t.setAttribute("controls","controls"),t.setAttribute("autoplay","autoplay"),document.getElementById("content").appendChild(t)}}</script>'.
+        '</head><body dir="rtl"><div style="visibility: hidden;"></body></div><center id="content"><h1>PHP Youtube Downloader</h1><input type="text" style="width:180" placeholder="Here is the link to YouTube :)" id="url"><br><br><button onclick="watch()">watch</button><br><br></center></body></html>';
     die();
-}
-else{
-    $q = parse_url($_GET['url'], PHP_URL_QUERY);
-    $q = explode("&", $q);
-    
-    foreach ($q as $str){
-        if(strpos($str, "v=") === 0){
-            $id = str_replace("v=", "", $str);
-            break;
-        }
+}else{
+    if (preg_match('/[a-z0-9_-]{11,13}/i', $_GET['url'], $matches)) {
+        $id = $matches[0];
     }
-    
     if(isset($id) && !empty($id)){
-        require_once('YTDL.php');
-        $yt = new YouTubeDownloader();
-        
         $file = 'logs' . '/' . date('Y-m-d') . '.log';
-        $write = str_pad($_SERVER['REMOTE_ADDR'] . ', ' , 15) . date('d/M/Y - H:i:s') . ', ' . 'YouTube: '.$id . "\r\n";
+        $write = str_pad($_SERVER['REMOTE_ADDR'] . ', ' , 25) . date('d/M/Y - H:i:s') . ', ' . 'YouTube: '.$id . "\r\n";
         file_put_contents($file, $write, FILE_APPEND);
         
-        $yt->stream("https://www.youtube.com/watch?v=".$id);
+        require_once('YTDL.php');
+        
+        $youtube = new \YouTube\YouTubeDownloader();
+        $links = $youtube->getDownloadLinks("https://www.youtube.com/watch?v=".$id, "mp4");
+        
+        if (count($links) == 0) {
+            die("no links..");
+        }
+        
+        $url = $links[0]['url'];
+        
+        $streamer = new \YouTube\YoutubeStreamer();
+        $streamer->stream($url);
     }
     else
-        die("'url' not found!");
+        die("'id' not found!");
 }
