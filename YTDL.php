@@ -4,7 +4,7 @@
 
 /*************************************************************
 *
-*  File Path: /src/BrowserClient.php
+*  File Path: \src\php-curl-client\src\BrowserClient.php
 *
 ************************************************************/
 
@@ -104,7 +104,7 @@ class BrowserClient extends Client
 
 /*************************************************************
 *
-*  File Path: /src/Client.php
+*  File Path: \src\php-curl-client\src\Client.php
 *
 ************************************************************/
 
@@ -201,7 +201,7 @@ class Client
 
 /*************************************************************
 *
-*  File Path: /src/CurlInfo.php
+*  File Path: \src\php-curl-client\src\CurlInfo.php
 *
 ************************************************************/
 
@@ -332,7 +332,7 @@ class CurlInfo implements \ArrayAccess
 
 /*************************************************************
 *
-*  File Path: /src/Response.php
+*  File Path: \src\php-curl-client\src\Response.php
 *
 ************************************************************/
 
@@ -352,9 +352,10 @@ class Response
     public $info;
 }
 
+
 /*************************************************************
 *
-*  File Path: /src/ContentTypes.php
+*  File Path: \src\php-curl-file-downloader\src\ContentTypes.php
 *
 ************************************************************/
 
@@ -408,7 +409,7 @@ class ContentTypes
         'application/mathml+xml' => 'mathml',
         'application/mbox' => 'mbox',
         'application/mediaservercontrol+xml' => 'mscml',
-
+        'application/metalink+xml' => 'metalink',
         'application/metalink4+xml' => 'meta4',
         'application/mets+xml' => 'mets',
         'application/mods+xml' => 'mods',
@@ -1159,7 +1160,7 @@ class ContentTypes
 
 /*************************************************************
 *
-*  File Path: /src/CurlDownloader.php
+*  File Path: \src\php-curl-file-downloader\src\CurlDownloader.php
 *
 ************************************************************/
 
@@ -1262,7 +1263,7 @@ class CurlDownloader
 
 /*************************************************************
 *
-*  File Path: /src/HeaderHandler.php
+*  File Path: \src\php-curl-file-downloader\src\HeaderHandler.php
 *
 ************************************************************/
 
@@ -1355,7 +1356,7 @@ class HeaderHandler
 
 /*************************************************************
 *
-*  File Path: /src/Browser.php
+*  File Path: \src\youtube-downloader\src\Browser.php
 *
 ************************************************************/
 
@@ -1435,7 +1436,7 @@ class Browser extends BrowserClient
 
 /*************************************************************
 *
-*  File Path: /src/DownloadOptions.php
+*  File Path: \src\youtube-downloader\src\DownloadOptions.php
 *
 ************************************************************/
 
@@ -1447,6 +1448,7 @@ class Browser extends BrowserClient
 //use YouTube\Models\VideoDetails;
 //use YouTube\Utils\Utils;
 
+// TODO: rename DownloaderResponse
 class DownloadOptions
 {
     /** @var StreamFormat[] $formats */
@@ -1575,7 +1577,7 @@ class DownloadOptions
 
 /*************************************************************
 *
-*  File Path: /src/Exception/TooManyRequestsException.php
+*  File Path: \src\youtube-downloader\src\Exception\TooManyRequestsException.php
 *
 ************************************************************/
 
@@ -1607,7 +1609,22 @@ class TooManyRequestsException extends YouTubeException
 
 /*************************************************************
 *
-*  File Path: /src/Exception/VideoPlayerNotFoundException.php
+*  File Path: \src\youtube-downloader\src\Exception\VideoNotFoundException.php
+*
+************************************************************/
+
+
+//namespace YouTube\Exception;
+
+class VideoNotFoundException extends YouTubeException
+{
+
+}
+
+
+/*************************************************************
+*
+*  File Path: \src\youtube-downloader\src\Exception\VideoPlayerNotFoundException.php
 *
 ************************************************************/
 
@@ -1622,7 +1639,7 @@ class VideoPlayerNotFoundException extends YouTubeException
 
 /*************************************************************
 *
-*  File Path: /src/Exception/YouTubeException.php
+*  File Path: \src\youtube-downloader\src\Exception\YouTubeException.php
 *
 ************************************************************/
 
@@ -1637,7 +1654,7 @@ class YouTubeException extends \Exception
 
 /*************************************************************
 *
-*  File Path: /src/Models/AbstractModel.php
+*  File Path: \src\youtube-downloader\src\Models\AbstractModel.php
 *
 ************************************************************/
 
@@ -1679,7 +1696,54 @@ abstract class AbstractModel
 
 /*************************************************************
 *
-*  File Path: /src/Models/SplitStream.php
+*  File Path: \src\youtube-downloader\src\Models\InitialPlayerResponse.php
+*
+************************************************************/
+
+
+//namespace YouTube\Models;
+
+//use YouTube\Utils\Utils;
+
+/**
+ * Class InitialPlayerResponse
+ * JSON data that appears inside /watch?v= page [ytInitialPlayerResponse=]
+ * @package YouTube\Models
+ */
+class InitialPlayerResponse
+{
+    private $ytInitialPlayerResponse;
+
+    public function __construct($ytInitialPlayerResponse)
+    {
+        $this->ytInitialPlayerResponse = $ytInitialPlayerResponse;
+    }
+
+    public function all()
+    {
+        return $this->ytInitialPlayerResponse;
+    }
+
+    protected function query($key)
+    {
+        return Utils::arrayGet($this->ytInitialPlayerResponse, $key);
+    }
+
+    public function isPlayabilityStatusOkay()
+    {
+        return $this->query('playabilityStatus.status') == 'OK';
+    }
+
+    public function getVideoDetails()
+    {
+        return $this->query('videoDetails');
+    }
+}
+
+
+/*************************************************************
+*
+*  File Path: \src\youtube-downloader\src\Models\SplitStream.php
 *
 ************************************************************/
 
@@ -1697,7 +1761,7 @@ class SplitStream extends AbstractModel
 
 /*************************************************************
 *
-*  File Path: /src/Models/StreamFormat.php
+*  File Path: \src\youtube-downloader\src\Models\StreamFormat.php
 *
 ************************************************************/
 
@@ -1722,12 +1786,17 @@ class StreamFormat extends AbstractModel
     {
         return trim(preg_replace('/;.*/', '', $this->mimeType));
     }
+
+    public function hasRateBypass()
+    {
+        return strpos($this->url, 'ratebypass') !== false;
+    }
 }
 
 
 /*************************************************************
 *
-*  File Path: /src/Models/VideoDetails.php
+*  File Path: \src\youtube-downloader\src\Models\VideoDetails.php
 *
 ************************************************************/
 
@@ -1784,7 +1853,184 @@ class VideoDetails
 
 /*************************************************************
 *
-*  File Path: /src/Responses/GetVideoInfo.php
+*  File Path: \src\youtube-downloader\src\Models\VideoInfo.php
+*
+************************************************************/
+
+
+//namespace YouTube\Models;
+
+class VideoInfo extends AbstractModel
+{
+    // uniquely identifies this video
+    public $id;
+
+    public $channelId;
+    public $channelTitle;
+
+    public $title;
+    public $description;
+    public $uploadDate;
+
+    // accessible by public
+    public $pageUrl;
+
+    public $viewCount;
+    public $commentCount;
+    public $likeCount;
+    public $dislikeCount;
+
+    // single URL
+    public $thumbnail;
+
+    // in seconds
+    public $duration;
+
+    // tags?
+    public $keywords = [];
+
+    // If empty, allowed everywhere. ISO 3166 format.
+    public $regionsAllowed = [];
+}
+
+
+/*************************************************************
+*
+*  File Path: \src\youtube-downloader\src\Models\YouTubeConfigData.php
+*
+************************************************************/
+
+
+//namespace YouTube\Models;
+
+//use YouTube\Utils\Utils;
+
+class YouTubeConfigData
+{
+    private $data;
+
+    public function __construct($data)
+    {
+        $this->data = $data;
+    }
+
+    protected function query($key)
+    {
+        return Utils::arrayGet($this->data, $key);
+    }
+
+    public function getGoogleVisitorId()
+    {
+        return $this->query('VISITOR_DATA');
+    }
+
+    public function getClientName()
+    {
+        return $this->query('INNERTUBE_CONTEXT_CLIENT_NAME');
+    }
+
+    public function getClientVersion()
+    {
+        return $this->query('INNERTUBE_CONTEXT_CLIENT_VERSION');
+    }
+
+    public function getApiKey()
+    {
+        return $this->query('INNERTUBE_API_KEY');
+    }
+}
+
+
+/*************************************************************
+*
+*  File Path: \src\youtube-downloader\src\PlayerResponseParser.php
+*
+************************************************************/
+
+
+//namespace YouTube;
+
+//use YouTube\Models\StreamFormat;
+//use YouTube\Responses\PlayerApiResponse;
+//use YouTube\Responses\VideoPlayerJs;
+//use YouTube\Utils\Utils;
+
+class PlayerResponseParser
+{
+    /**
+     * @var PlayerApiResponse
+     */
+    private $response;
+
+    /** @var VideoPlayerJs */
+    protected $videoPlayerJs;
+
+    protected function __construct(PlayerApiResponse $response)
+    {
+        $this->response = $response;
+    }
+
+    public static function createFrom(PlayerApiResponse $playerApiResponse)
+    {
+        return new static($playerApiResponse);
+    }
+
+    public function setPlayerJsResponse(VideoPlayerJs $videoPlayerJs)
+    {
+        $this->videoPlayerJs = $videoPlayerJs;
+    }
+
+    /**
+     * @return StreamFormat[]
+     */
+    public function parseLinks($signatureDecrypter = null)
+    {
+        $formats_combined = $this->response->getAllFormats();
+
+        // final response
+        $return = array();
+
+        foreach ($formats_combined as $format) {
+
+            // appear as either "cipher" or "signatureCipher"
+            $cipher = Utils::arrayGet($format, 'cipher', Utils::arrayGet($format, 'signatureCipher', ''));
+
+            // some videos do not need to be decrypted!
+            if (isset($format['url'])) {
+                $return[] = new StreamFormat($format);
+                continue;
+            }
+
+            $cipherArray = Utils::parseQueryString($cipher);
+
+            $url = Utils::arrayGet($cipherArray, 'url');
+            $sp = Utils::arrayGet($cipherArray, 'sp'); // used to be 'sig'
+            $signature = Utils::arrayGet($cipherArray, 's');
+
+            $streamUrl = new StreamFormat($format);
+
+            if ($this->videoPlayerJs) {
+
+                $decoded_signature = (new SignatureDecoder())->decode($signature, $this->videoPlayerJs->getResponseBody());
+                $decoded_url = $url . '&' . $sp . '=' . $decoded_signature;
+
+                $streamUrl->url = $decoded_url;
+
+            } else {
+                $streamUrl->url = $url;
+            }
+
+            $return[] = $streamUrl;
+        }
+
+        return $return;
+    }
+}
+
+
+/*************************************************************
+*
+*  File Path: \src\youtube-downloader\src\Responses\GetVideoInfo.php
 *
 ************************************************************/
 
@@ -1819,7 +2065,7 @@ class GetVideoInfo extends HttpResponse
 
 /*************************************************************
 *
-*  File Path: /src/Responses/HttpResponse.php
+*  File Path: \src\youtube-downloader\src\Responses\HttpResponse.php
 *
 ************************************************************/
 
@@ -1875,7 +2121,37 @@ abstract class HttpResponse
 
 /*************************************************************
 *
-*  File Path: /src/Responses/VideoPlayerJs.php
+*  File Path: \src\youtube-downloader\src\Responses\PlayerApiResponse.php
+*
+************************************************************/
+
+
+//namespace YouTube\Responses;
+
+//use YouTube\Utils\Utils;
+
+class PlayerApiResponse extends HttpResponse
+{
+    protected function query($key)
+    {
+        return Utils::arrayGet($this->getJson(), $key);
+    }
+
+    public function getAllFormats()
+    {
+        $formats = $this->query('streamingData.formats');
+
+        // video only or audio only streams
+        $adaptiveFormats = $this->query('streamingData.adaptiveFormats');
+
+        return array_merge((array)$formats, (array)$adaptiveFormats);
+    }
+}
+
+
+/*************************************************************
+*
+*  File Path: \src\youtube-downloader\src\Responses\VideoPlayerJs.php
 *
 ************************************************************/
 
@@ -1889,13 +2165,16 @@ class VideoPlayerJs extends HttpResponse
 
 /*************************************************************
 *
-*  File Path: /src/Responses/WatchVideoPage.php
+*  File Path: \src\youtube-downloader\src\Responses\WatchVideoPage.php
 *
 ************************************************************/
 
 
 //namespace YouTube\Responses;
 
+//use YouTube\Models\InitialPlayerResponse;
+//use YouTube\Models\VideoInfo;
+//use YouTube\Models\YouTubeConfigData;
 //use YouTube\Utils\Utils;
 
 class WatchVideoPage extends HttpResponse
@@ -1908,12 +2187,15 @@ class WatchVideoPage extends HttpResponse
             strpos($this->getResponseBody(), '/recaptcha/') !== false;
     }
 
+    public function isVideoNotFound()
+    {
+        return strpos($this->getResponseBody(), '<title> - YouTube</title>') !== false;
+    }
+
     public function hasPlayableVideo()
     {
         $playerResponse = $this->getPlayerResponse();
-        $playabilityStatus = Utils::arrayGet($playerResponse, 'playabilityStatus.status');
-
-        return $this->getResponse()->status == 200 && $playabilityStatus == 'OK';
+        return $this->getResponse()->status == 200 && $playerResponse->isPlayabilityStatusOkay();
     }
 
     /**
@@ -1932,6 +2214,7 @@ class WatchVideoPage extends HttpResponse
         return null;
     }
 
+    // returns very similar response to what you get when you query /youtubei/v1/player
     public function getPlayerResponse()
     {
         // $re = '/ytplayer.config\s*=\s*([^\n]+});ytplayer/i';
@@ -1939,18 +2222,81 @@ class WatchVideoPage extends HttpResponse
         $re = '/ytInitialPlayerResponse\s*=\s*({.+?})\s*;/i';
 
         if (preg_match($re, $this->getResponseBody(), $matches)) {
-            $match = $matches[1];
-            return json_decode($match, true);
+            $data = json_decode($matches[1], true);
+            return new InitialPlayerResponse($data);
         }
 
-        return array();
+        return null;
+    }
+
+    public function getYouTubeConfigData()
+    {
+        if (preg_match('/ytcfg.set\(({.*?})\)/', $this->getResponseBody(), $matches)) {
+            $data = json_decode($matches[1], true);
+            return new YouTubeConfigData($data);
+        }
+
+        return null;
+    }
+
+    protected function getInitialData()
+    {
+        // TODO: this does not appear for mobile
+        if (preg_match('/ytInitialData\s*=\s*({.+?})\s*;/i', $this->getResponseBody(), $matches)) {
+            $json = $matches[1];
+            return json_decode($json, true);
+        }
+
+        return null;
+    }
+
+    /**
+     * @return VideoInfo
+     */
+    public function getVideoInfo()
+    {
+        $playerResponse = $this->getPlayerResponse();
+
+        if ($playerResponse) {
+            $playerResponse = $playerResponse->all();
+        }
+
+        $thumbnails = Utils::arrayGet($playerResponse, 'videoDetails.thumbnail.thumbnails', []);
+
+        $thumbnail_url = null;
+        $thumb_max_width = 0;
+
+        foreach ($thumbnails as $thumbnail) {
+
+            if ($thumbnail['width'] > $thumb_max_width) {
+                $thumbnail_url = $thumbnail['url'];
+                $thumb_max_width = $thumbnail['width'];
+            }
+        }
+
+        $data = array(
+            'id' => Utils::arrayGet($playerResponse, 'videoDetails.videoId'),
+            'channelId' => Utils::arrayGet($playerResponse, 'videoDetails.channelId'),
+            'channelTitle' => Utils::arrayGet($playerResponse, 'videoDetails.author'),
+            'title' => Utils::arrayGet($playerResponse, 'videoDetails.title'),
+            'description' => Utils::arrayGet($playerResponse, 'videoDetails.shortDescription'),
+            'pageUrl' => $this->getResponse()->info->url,
+            'uploadDate' => Utils::arrayGet($playerResponse, 'microformat.playerMicroformatRenderer.uploadDate'),
+            'viewCount' => Utils::arrayGet($playerResponse, 'videoDetails.viewCount'),
+            'thumbnail' => $thumbnail_url,
+            'duration' => Utils::arrayGet($playerResponse, 'videoDetails.lengthSeconds'),
+            'keywords' => Utils::arrayGet($playerResponse, 'videoDetails.keywords', []),
+            'regionsAllowed' => Utils::arrayGet($playerResponse, 'microformat.playerMicroformatRenderer.availableCountries', [])
+        );
+
+        return new VideoInfo($data);
     }
 }
 
 
 /*************************************************************
 *
-*  File Path: /src/SignatureDecoder.php
+*  File Path: \src\youtube-downloader\src\SignatureDecoder.php
 *
 ************************************************************/
 
@@ -2003,7 +2349,7 @@ class SignatureDecoder
 
             return $func_name;
 
-        } else if (preg_match('@(?:\b|[^a-zA-Z0-9$])([a-zA-Z0-9$]{2})\s*=\s*function\(\s*a\s*\)\s*{\s*a\s*=\s*a\.split\(\s*""\s*\)@is', $js_code, $matches)) {
+        } else if (preg_match('@(?:\b|[^a-zA-Z0-9$])([a-zA-Z0-9$]{2,3})\s*=\s*function\(\s*a\s*\)\s*{\s*a\s*=\s*a\.split\(\s*""\s*\)@is', $js_code, $matches)) {
             return preg_quote($matches[1]);
         }
 
@@ -2066,7 +2412,7 @@ class SignatureDecoder
 
 /*************************************************************
 *
-*  File Path: /src/Utils/ITagUtils.php
+*  File Path: \src\youtube-downloader\src\Utils\ITagUtils.php
 *
 ************************************************************/
 
@@ -2227,7 +2573,7 @@ class ITagUtils
 
 /*************************************************************
 *
-*  File Path: /src/Utils/SerializationUtils.php
+*  File Path: \src\youtube-downloader\src\Utils\SerializationUtils.php
 *
 ************************************************************/
 
@@ -2276,7 +2622,7 @@ class SerializationUtils
 
 /*************************************************************
 *
-*  File Path: /src/Utils/Utils.php
+*  File Path: \src\youtube-downloader\src\Utils\Utils.php
 *
 ************************************************************/
 
@@ -2292,11 +2638,39 @@ class Utils
      */
     public static function extractVideoId($str)
     {
-        if (preg_match('/[a-z0-9_-]{11}/i', $str, $matches)) {
-            return $matches[0];
+        if (strlen($str) === 11) {
+            return $str;
+        }
+
+        if (preg_match('/(?:\/|%3D|v=|vi=)([a-z0-9_-]{11})(?:[%#?&]|$)/ui', $str, $matches)) {
+            return $matches[1];
         }
 
         return false;
+    }
+
+    /**
+     * Will parse either channel ID or username from custom URL.
+     * Will not parse legacy usernames as those cannot be queried via YouTube API
+     * https://support.google.com/youtube/answer/6180214?hl=en
+     * @param $url
+     * @return mixed|null
+     */
+    public static function extractChannel($url)
+    {
+        if (strpos($url, 'UC') === 0 && strlen($url) == 24) {
+            return $url;
+        }
+
+        if (preg_match('/channel\/(UC[\w-]{22})/', $url, $matches)) {
+            return $matches[1];
+        }
+
+        if (preg_match('/\/c\/(\w+)/i', $url, $matches)) {
+            return $matches[1];
+        }
+
+        return null;
     }
 
     public static function arrayGet($array, $key, $default = null)
@@ -2359,19 +2733,20 @@ class Utils
 
 /*************************************************************
 *
-*  File Path: /src/YouTubeDownloader.php
+*  File Path: \src\youtube-downloader\src\YouTubeDownloader.php
 *
 ************************************************************/
 
 
 //namespace YouTube;
 
-//use YouTube\Models\StreamFormat;
 //use YouTube\Exception\TooManyRequestsException;
-//use YouTube\Exception\VideoPlayerNotFoundException;
+//use YouTube\Exception\VideoNotFoundException;
 //use YouTube\Exception\YouTubeException;
 //use YouTube\Models\VideoDetails;
+//use YouTube\Models\YouTubeConfigData;
 //use YouTube\Responses\GetVideoInfo;
+//use YouTube\Responses\PlayerApiResponse;
 //use YouTube\Responses\VideoPlayerJs;
 //use YouTube\Responses\WatchVideoPage;
 //use YouTube\Utils\Utils;
@@ -2408,6 +2783,7 @@ class YouTubeDownloader
         return [];
     }
 
+    // No longer working...
     public function getVideoInfo($video_id)
     {
         $video_id = Utils::extractVideoId($video_id);
@@ -2451,46 +2827,38 @@ class YouTubeDownloader
      */
     public function parseLinksFromPlayerResponse($player_response, VideoPlayerJs $player)
     {
-        $js_code = $player->getResponseBody();
+        return [];
+    }
 
-        $formats = Utils::arrayGet($player_response, 'streamingData.formats', []);
+    protected function getPlayerApiResponse($video_id, YouTubeConfigData $configData)
+    {
+        // $api_key = 'AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8';
 
-        // video only or audio only streams
-        $adaptiveFormats = Utils::arrayGet($player_response, 'streamingData.adaptiveFormats', []);
+        // exact params matter, because otherwise "slow" download links will be returned
+        $response = $this->client->post("https://www.youtube.com/youtubei/v1/player?key=" . $configData->getApiKey(), json_encode([
+            "context" => [
+                "client" => [
+                    "clientName" => "ANDROID",
+                    "clientVersion" => "16.20",
+                    "hl" => "en"
+                ]
+            ],
+            "videoId" => $video_id,
+            "playbackContext" => [
+                "contentPlaybackContext" => [
+                    "html5Preference" => "HTML5_PREF_WANTS"
+                ]
+            ],
+            "contentCheckOk" => true,
+            "racyCheckOk" => true
+        ]), [
+            'Content-Type' => 'application/json',
+            'X-Goog-Visitor-Id' => $configData->getGoogleVisitorId(),
+            'X-Youtube-Client-Name' => $configData->getClientName(),
+            'X-Youtube-Client-Version' => $configData->getClientVersion()
+        ]);
 
-        $formats_combined = array_merge($formats, $adaptiveFormats);
-
-        // final response
-        $return = array();
-
-        foreach ($formats_combined as $format) {
-
-            // appear as either "cipher" or "signatureCipher"
-            $cipher = Utils::arrayGet($format, 'cipher', Utils::arrayGet($format, 'signatureCipher', ''));
-
-            // some videos do not need to be decrypted!
-            if (isset($format['url'])) {
-                $return[] = new StreamFormat($format);
-                continue;
-            }
-
-            $cipherArray = Utils::parseQueryString($cipher);
-
-            $url = Utils::arrayGet($cipherArray, 'url');
-            $sp = Utils::arrayGet($cipherArray, 'sp'); // used to be 'sig'
-            $signature = Utils::arrayGet($cipherArray, 's');
-
-            $decoded_signature = (new SignatureDecoder())->decode($signature, $js_code);
-
-            $decoded_url = $url . '&' . $sp . '=' . $decoded_signature;
-
-            $streamUrl = new StreamFormat($format);
-            $streamUrl->url = $decoded_url;
-
-            $return[] = $streamUrl;
-        }
-
-        return $return;
+        return new PlayerApiResponse($response);
     }
 
     /**
@@ -2504,34 +2872,33 @@ class YouTubeDownloader
     {
         $page = $this->getPage($video_id);
 
+        $video_id = Utils::extractVideoId($video_id);
+
         if ($page->isTooManyRequests()) {
             throw new TooManyRequestsException($page);
-        } else if (!$page->isStatusOkay()) {
-            throw new YouTubeException('Video not found');
+        } elseif (!$page->isStatusOkay()) {
+            throw new YouTubeException('Page failed to load. HTTP error: ' . $page->getResponse()->error);
+        } elseif ($page->isVideoNotFound()) {
+            throw new VideoNotFoundException();
         }
 
-        // get JSON encoded parameters that appear on video pages
-        $player_response = $page->getPlayerResponse();
+        $youtube_config_data = $page->getYouTubeConfigData();
 
-        // it may ask you to "Sign in to confirm your age"
-        // we can bypass that by querying /get_video_info
-        if (!$page->hasPlayableVideo()) {
-            $player_response = $this->getVideoInfo($video_id)->getPlayerResponse();
-        }
-
-        if (empty($player_response)) {
-            throw new VideoPlayerNotFoundException();
-        }
+        // the most reliable way of fetching all download links no matter what
+        $player_response = $this->getPlayerApiResponse($video_id, $youtube_config_data);
 
         // get player.js location that holds signature function
         $player_url = $page->getPlayerScriptUrl();
         $response = $this->getBrowser()->cachedGet($player_url);
         $player = new VideoPlayerJs($response);
 
-        $links = $this->parseLinksFromPlayerResponse($player_response, $player);
+        $parser = PlayerResponseParser::createFrom($player_response);
+        $parser->setPlayerJsResponse($player);
+
+        $links = $parser->parseLinks();
 
         // since we already have that information anyways...
-        $info = VideoDetails::fromPlayerResponseArray($player_response);
+        $info = VideoDetails::fromPlayerResponseArray($player_response->getJson());
 
         return new DownloadOptions($links, $info);
     }
@@ -2541,7 +2908,7 @@ class YouTubeDownloader
 
 /*************************************************************
 *
-*  File Path: /src/YouTubeStreamer.php
+*  File Path: \src\youtube-downloader\src\YouTubeStreamer.php
 *
 ************************************************************/
 
